@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+	
+<mapper namespace="boardlist">
+	<resultMap type="Board" id="boardResultMap">
+		<id column="NUM" property="num" javaType="java.lang.String" jdbcType="INTEGER"/>
+		<result column="WRITER" property="writer" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result column="EMAIL" property="email" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result column="SUBJECT" property="subject" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result column="PASS" property="pass" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result column="READCOUNT" property="readcount" javaType="java.lang.String" jdbcType="INTEGER"/>
+		<result column="REF" property="ref" javaType="java.lang.String" jdbcType="INTEGER"/>
+		<result column="STEP" property="step" javaType="java.lang.String" jdbcType="INTEGER"/>
+		<result column="DEPTH" property="depth" javaType="java.lang.String" jdbcType="INTEGER"/>
+		<result column="REGDATE" property="regdate" javaType="java.lang.String" jdbcType="TIMESTAMP"/>
+		<result column="CONTENT" property="content" javaType="java.lang.String" jdbcType="VARCHAR"/>
+		<result column="IP" property="ip" javaType="java.lang.String" jdbcType="VARCHAR"/>	
+	</resultMap>
+
+	<select id="nurse.board.dao.BoardDao.getBoardList" parameterType="Board" resultMap="boardResultMap">
+    	select * from (
+			select rownum rnum, a.* from ( 
+				select * from board order by gno desc, srtno asc 
+			) a
+		)
+		where rnum &gt;= #{start,javaType=java.lang.Integer,jdbcType=INTEGER} 
+		and rnum &lt;= #{end,javaType=java.lang.Integer,jdbcType=INTEGER}
+	</select>
+	
+	<insert id="nurse.board.dao.BoardDao.insertArticle" parameterType="Board">
+		insert into board(
+		num, writer, email, subject, pass, 
+		readcount,ref, step, depth, regdate, 
+		content, ip,
+		gno, ccnt, srtno, gap) 
+		values(board_seq.NEXTVAL,#{writer},#{email},#{subject},#{pass},
+		#{readcount},#{ref},#{step},#{depth}, sysdate,
+		#{content},#{ip},
+		board_seq.NEXTVAL,#{ccnt},#{srtno},#{gap})
+	</insert>
+	
+	<insert id="nurse.board.dao.BoardDao.insertArticlePlus" parameterType="Board">
+		insert into board(
+		num, writer, email, subject, pass, 
+		readcount,ref, step, depth, regdate, 
+		content, ip,
+		gno, ccnt, srtno, gap) 
+		values(board_seq.NEXTVAL,#{writer},#{email},#{subject},#{pass},
+		#{readcount},#{ref},#{step},#{depth}, sysdate,
+		#{content},#{ip},
+		#{gno},#{ccnt},#{srtno},#{gap})
+	</insert>
+	
+	<select id="nurse.board.dao.BoardDao.getBoardArticle" parameterType="String" resultMap="boardResultMap">
+		select * from board
+		where 1=1
+		and num=#{num,javaType=java.lang.String,jdbcType=NUMERIC}
+	</select>
+	
+	<select id="nurse.board.dao.BoardDao.getBoardCount" resultType="int">
+		select count(num) cnt from board
+	</select>
+	
+	<update id="nurse.board.dao.BoardDao.plusArticleCount" parameterType="String">
+		update board set readcount=readcount+1
+		where 1=1
+		and num=#{num,javaType=java.lang.String,jdbcType=NUMERIC}
+	</update>
+	
+	<delete id="nurse.board.dao.BoardDao.deleteBoardArticle" parameterType="Board">
+		delete board where 1=1
+		and num=#{num,javaType=java.lang.String,jdbcType=NUMERIC}
+		and pass=#{pass,javaType=java.lang.String,jdbcType=VARCHAR}
+	</delete>
+	
+	<update id="nurse.board.dao.BoardDao.updateBoardArticle" parameterType="Board">
+		update board set 
+		email=#{email}, subject=#{subject}, 
+		content=#{content}, ip=#{ip}
+		where 1=1
+		and num=#{num,javaType=java.lang.String,jdbcType=NUMERIC}
+		and pass=#{pass,javaType=java.lang.String,jdbcType=VARCHAR}
+	</update>
+	<!--
+	<update id="nurse.board.dao.BoardDao.updateParentCcnt" parameterType="Board">
+		update board set 
+		ccnt=ccnt+1
+		where 1=1
+		and gno=#{gno,javaType=java.lang.String,jdbcType=NUMERIC}
+		and srtno &gt; #{srtno,javaType=java.lang.String,jdbcType=NUMERIC}
+		and gap &lt; #{gap,javaType=java.lang.String,jdbcType=NUMERIC}
+	</update>
+	-->
+	<update id="nurse.board.dao.BoardDao.updateSameGroupSrtno" parameterType="Board">
+		update board set 
+		srtno=srtno+1
+		where 1=1
+		and gno=#{gno,javaType=java.lang.String,jdbcType=NUMERIC}
+		and srtno &gt;= #{srtno,javaType=java.lang.String,jdbcType=NUMERIC}
+	</update>
+	
+	<select id="nurse.board.dao.BoardDao.getMaxNum" resultType="int">
+		select max(num)+1 num from board
+	</select>
+	
+</mapper>	
